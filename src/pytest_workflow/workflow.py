@@ -79,6 +79,8 @@ class Workflow(object):
         # is started from multiple threads.
         with self.start_lock:
             if not self._started:
+                stdout_h = None
+                stderr_h = None
                 try:
                     stdout_h = self.stdout_file.open('wb')
                     stderr_h = self.stderr_file.open('wb')
@@ -91,8 +93,10 @@ class Workflow(object):
                     self.errors.append(error)
                 finally:
                     self._started = True
-                    stdout_h.close()
-                    stderr_h.close()
+                    if stdout_h is not None:
+                        stdout_h.close()
+                    if stderr_h is not None:
+                        stderr_h.close()
             else:
                 raise ValueError("Workflows can only be started once")
 
