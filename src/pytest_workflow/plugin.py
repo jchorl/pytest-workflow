@@ -76,6 +76,10 @@ def pytest_addoption(parser: pytest.Parser):
         type=int,
         help="The number of bytes to display from the stderr and "
              "stdout on exitcode.")
+    parser.addoption(
+        "--stream-stderr", action="store_true",
+        help="Stream stderr as the process runs.",
+    )
     # Why `--tag <tag>` and not simply use `pytest -m <tag>`?
     # `-m` uses a "mark expression". So you have to type a piece of python
     # code instead of just supplying the tags you want. This is fine for the
@@ -409,7 +413,8 @@ class WorkflowTestsCollector(pytest.Collector):
         workflow = Workflow(command=self.workflow_test.command,
                             cwd=tempdir,
                             name=self.workflow_test.name,
-                            desired_exit_code=self.workflow_test.exit_code)
+                            desired_exit_code=self.workflow_test.exit_code,
+                            stream_stderr=self.config.getoption("stream_stderr"))
 
         # Add the workflow to the workflow queue.
         self.config.workflow_queue.put(workflow)
@@ -469,12 +474,13 @@ class WorkflowTestsCollector(pytest.Collector):
             workflow=workflow,
             content_name=f"'{self.workflow_test.name}': stdout")]
 
-        tests += [ContentTestCollector.from_parent(
-            name="stderr", parent=self,
-            filepath=workflow.stderr_file,
-            content_test=self.workflow_test.stderr,
-            workflow=workflow,
-            content_name=f"'{self.workflow_test.name}': stderr")]
+        if not self.config.getoption("stream_stderr"):
+            tests += [ContentTestCollector.from_parent(
+                name="stderr", parent=self,
+                filepath=workflow.stderr_file,
+                content_test=self.workflow_test.stderr,
+                workflow=workflow,
+                content_name=f"'{self.workflow_test.name}': stderr")]
 
         return tests
 

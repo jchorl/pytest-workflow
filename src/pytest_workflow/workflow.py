@@ -23,6 +23,7 @@ later.
 import queue
 import shlex
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -36,7 +37,8 @@ class Workflow(object):
                  command: str,
                  cwd: Optional[Path] = None,
                  name: Optional[str] = None,
-                 desired_exit_code: int = 0):
+                 desired_exit_code: int = 0,
+                 stream_stderr: bool = False):
         """
         Initiates a workflow object
         :param command: The string that represents the command to be run
@@ -61,11 +63,15 @@ class Workflow(object):
                                              suffix=".out").name)
             if cwd is None
             else self.cwd / Path("log.out"))
-        self.stderr_file = (
-            Path(tempfile.NamedTemporaryFile(prefix=self.name,
-                                             suffix=".err").name)
-            if cwd is None
-            else self.cwd / Path("log.err"))
+        self.stream_stderr = stream_stderr
+        if self.stream_stderr:
+            self.stderr_file = None
+        else:
+            self.stderr_file = (
+                Path(tempfile.NamedTemporaryFile(prefix=self.name,
+                                                 suffix=".err").name)
+                if cwd is None
+                else self.cwd / Path("log.err"))
         self._popen: Optional[subprocess.Popen] = None
         self._started = False
         self.errors: List[Exception] = []
@@ -83,7 +89,9 @@ class Workflow(object):
                 stderr_h = None
                 try:
                     stdout_h = self.stdout_file.open('wb')
-                    stderr_h = self.stderr_file.open('wb')
+                    stderr_h = sys.stderr
+                    if not self.stream_stderr:
+                        stderr_h = self.stderr_file.open('wb')
                     sub_process_args = shlex.split(self.command)
                     self._popen = subprocess.Popen(
                         sub_process_args, stdout=stdout_h,
@@ -95,7 +103,7 @@ class Workflow(object):
                     self._started = True
                     if stdout_h is not None:
                         stdout_h.close()
-                    if stderr_h is not None:
+                    if stderr_h is not None and not self.stream_stderr:
                         stderr_h.close()
             else:
                 raise ValueError("Workflows can only be started once")
@@ -158,6 +166,8 @@ class Workflow(object):
     @property
     def stderr(self) -> bytes:
         self.wait()
+        if self.stream_stderr:
+            raise ValueError("stderr is unavailable when it is streamed")
         with self.stderr_file.open('rb') as stderr:
             return stderr.read()
 
