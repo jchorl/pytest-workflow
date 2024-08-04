@@ -409,7 +409,8 @@ class WorkflowTestsCollector(pytest.Collector):
         workflow = Workflow(command=self.workflow_test.command,
                             cwd=tempdir,
                             name=self.workflow_test.name,
-                            desired_exit_code=self.workflow_test.exit_code)
+                            desired_exit_code=self.workflow_test.exit_code,
+                            capture=self.config.getoption("capture"))
 
         # Add the workflow to the workflow queue.
         self.config.workflow_queue.put(workflow)
@@ -462,19 +463,20 @@ class WorkflowTestsCollector(pytest.Collector):
                 parent=self, filetest=filetest, workflow=workflow)
             for filetest in self.workflow_test.files]
 
-        tests += [ContentTestCollector.from_parent(
-            name="stdout", parent=self,
-            filepath=workflow.stdout_file,
-            content_test=self.workflow_test.stdout,
-            workflow=workflow,
-            content_name=f"'{self.workflow_test.name}': stdout")]
+        if self.config.getoption("capture") != "no":
+            tests += [ContentTestCollector.from_parent(
+                name="stdout", parent=self,
+                filepath=workflow.stdout_file,
+                content_test=self.workflow_test.stdout,
+                workflow=workflow,
+                content_name=f"'{self.workflow_test.name}': stdout")]
 
-        tests += [ContentTestCollector.from_parent(
-            name="stderr", parent=self,
-            filepath=workflow.stderr_file,
-            content_test=self.workflow_test.stderr,
-            workflow=workflow,
-            content_name=f"'{self.workflow_test.name}': stderr")]
+            tests += [ContentTestCollector.from_parent(
+                name="stderr", parent=self,
+                filepath=workflow.stderr_file,
+                content_test=self.workflow_test.stderr,
+                workflow=workflow,
+                content_name=f"'{self.workflow_test.name}': stderr")]
 
         return tests
 
