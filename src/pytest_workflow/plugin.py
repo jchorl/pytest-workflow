@@ -463,20 +463,19 @@ class WorkflowTestsCollector(pytest.Collector):
                 parent=self, filetest=filetest, workflow=workflow)
             for filetest in self.workflow_test.files]
 
-        if self.config.getoption("capture") != "no":
-            tests += [ContentTestCollector.from_parent(
-                name="stdout", parent=self,
-                filepath=workflow.stdout_file,
-                content_test=self.workflow_test.stdout,
-                workflow=workflow,
-                content_name=f"'{self.workflow_test.name}': stdout")]
+        tests += [ContentTestCollector.from_parent(
+            name="stdout", parent=self,
+            filepath=workflow.stdout_file,
+            content_test=self.workflow_test.stdout,
+            workflow=workflow,
+            content_name=f"'{self.workflow_test.name}': stdout")]
 
-            tests += [ContentTestCollector.from_parent(
-                name="stderr", parent=self,
-                filepath=workflow.stderr_file,
-                content_test=self.workflow_test.stderr,
-                workflow=workflow,
-                content_name=f"'{self.workflow_test.name}': stderr")]
+        tests += [ContentTestCollector.from_parent(
+            name="stderr", parent=self,
+            filepath=workflow.stderr_file,
+            content_test=self.workflow_test.stderr,
+            workflow=workflow,
+            content_name=f"'{self.workflow_test.name}': stderr")]
 
         return tests
 
