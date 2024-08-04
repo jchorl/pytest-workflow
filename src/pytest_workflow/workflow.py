@@ -65,8 +65,9 @@ class Workflow(object):
         # to prevent clutter created when testing.
         supported_capture_methods = ["no", "fd"]
         if capture not in supported_capture_methods:
-            raise ValueError(f"only capture methods {supported_capture_methods} are "
-                             f"supported, found {capture}")
+            raise ValueError("only capture methods "
+                             f"{supported_capture_methods} are supported, "
+                             f"found {capture}")
         self.capture = capture
         self.stdout_file = None
         self.stderr_file = None
@@ -169,7 +170,9 @@ class Workflow(object):
     def stdout(self) -> bytes:
         self.wait()
         if self.stdout_file is None:
-            raise ValueError(f"Stdout not available with capture={self.capture}")
+            raise ValueError(
+                f"Stdout not available with capture={self.capture}"
+            )
         with self.stdout_file.open('rb') as stdout:
             return stdout.read()
 
@@ -177,7 +180,9 @@ class Workflow(object):
     def stderr(self) -> bytes:
         self.wait()
         if self.stderr_file is None:
-            raise ValueError(f"Stdout not available with capture={self.capture}")
+            raise ValueError(
+                f"Stdout not available with capture={self.capture}"
+            )
         with self.stderr_file.open('rb') as stderr:
             return stderr.read()
 

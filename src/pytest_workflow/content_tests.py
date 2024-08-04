@@ -202,8 +202,8 @@ class ContentTestItem(pytest.Item):
         self.parent: ContentTestCollector = parent  # explicitly declare type
         assert self.parent.filepath is not None, (
             f"Invalid test {content_name}, unknown file to validate. "
-            "This can happen if you specify stdout/stderr tests while specifying a "
-            "different capture method.")
+            "This can happen if you specify stdout/stderr tests while "
+            "specifying a different capture method.")
         self.should_contain = should_contain
         self.string = string
         self.content_name = content_name

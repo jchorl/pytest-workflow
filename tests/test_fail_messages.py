@@ -191,4 +191,7 @@ def test_invalid_test_capture(pytester):
     """
     pytester.makefile(".yml", textwrap.dedent(test_yml_contents))
     result = pytester.runpytest("-v", "-s")
-    assert "Invalid test 'tee test': stdout, unknown file to validate" in result.stdout.str()
+    assert (
+        "Invalid test 'tee test': stdout, unknown file to validate"
+        in result.stdout.str()
+    )

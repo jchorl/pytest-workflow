@@ -106,10 +106,12 @@ def test_workflow_matching_exit_code():
     workflow2.run()
     assert workflow2.matching_exitcode()
 
+
 def test_capture_unsupported():
     with pytest.raises(ValueError) as error:
-        workflow = Workflow("echo moo", capture="tee-sys")
+        Workflow("echo moo", capture="tee-sys")
     error.match("only capture methods")
+
 
 def test_capture_no():
     workflow = Workflow("echo moo", capture="no")
